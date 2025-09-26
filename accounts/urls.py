@@ -6,12 +6,14 @@ from .views import (
     update_comments_classification,
     get_toxic_comments,
     delete_child,
-    verify_child_login
+    verify_child_login,
+    InstagramOAuthLoginView
 )
 
 urlpatterns = [
     path('signup/', ParentSignupView.as_view(), name='parent-signup'),
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('login/instagram/', InstagramOAuthLoginView.as_view(), name='instagram-oauth-login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('toxic-comments/', get_toxic_comments, name='toxic-comments'),
     path('children/', ChildListCreateView.as_view(), name='child-list-create'),

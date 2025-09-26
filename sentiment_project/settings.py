@@ -25,11 +25,15 @@ SECRET_KEY = 'django-insecure-qga+w(st8ji&olvpfi(ak$%#=el+51lp9*859b#e5q34ga9c)3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'brittani-unconcentrated-jeffery.ngrok-free.dev',
+]
 
-INSTAGRAM_CLIENT_ID = "your-client-id-here"
-INSTAGRAM_CLIENT_SECRET = "your-client-secret-here"
-INSTAGRAM_REDIRECT_URI = "https://your-redirect-url.com"
+INSTAGRAM_CLIENT_ID = "751459870919841"
+INSTAGRAM_CLIENT_SECRET = "89eb37413ba216ea7876f8747c7e2752"
+INSTAGRAM_REDIRECT_URI = "https://brittani-unconcentrated-jeffery.ngrok-free.dev/auth/callback"
 
 
 
@@ -140,4 +144,5 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
     "http://localhost:8080",
+    "https://brittani-unconcentrated-jeffery.ngrok-free.dev",
 ]

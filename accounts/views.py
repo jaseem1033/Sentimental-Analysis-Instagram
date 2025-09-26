@@ -1,3 +1,67 @@
+from rest_framework.views import APIView
+from django.conf import settings
+import requests
+from rest_framework_simplejwt.tokens import RefreshToken
+# --- Instagram OAuth Login View ---
+class InstagramOAuthLoginView(APIView):
+    """
+    Accepts Instagram OAuth code, exchanges for access token, creates/authenticates user, returns JWT tokens.
+    """
+    def post(self, request):
+        print("Instagram OAuth endpoint called with code:", request.data.get('code'))
+        import logging
+        logger = logging.getLogger("instagram_oauth")
+        code = request.data.get('code')
+        logger.info(f"Received OAuth code: {code}")
+        if not code:
+            logger.error("Missing code in request")
+            return Response({'error': 'Missing code'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Exchange code for access token with Instagram
+        client_id = getattr(settings, 'INSTAGRAM_CLIENT_ID', None)
+        client_secret = getattr(settings, 'INSTAGRAM_CLIENT_SECRET', None)
+        redirect_uri = getattr(settings, 'INSTAGRAM_REDIRECT_URI', None)
+        logger.info(f"Using client_id={client_id}, redirect_uri={redirect_uri}")
+        if not all([client_id, client_secret, redirect_uri]):
+            logger.error("Instagram app credentials not configured")
+            return Response({'error': 'Instagram app credentials not configured'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        token_url = 'https://api.instagram.com/oauth/access_token'
+        data = {
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'grant_type': 'authorization_code',
+            'redirect_uri': redirect_uri,
+            'code': code,
+        }
+        logger.info(f"Posting to Instagram token endpoint: {token_url} with data: {data}")
+        try:
+            resp = requests.post(token_url, data=data)
+            logger.info(f"Instagram response status: {resp.status_code}, body: {resp.text}")
+            resp.raise_for_status()
+            token_data = resp.json()
+        except Exception as e:
+            logger.error(f"Failed to exchange code with Instagram: {e}")
+            return Response({'error': 'Failed to exchange code with Instagram', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        access_token = token_data.get('access_token')
+        user_id = token_data.get('user_id')
+        logger.info(f"Instagram token_data: {token_data}")
+        if not access_token or not user_id:
+            logger.error("Invalid token response from Instagram")
+            return Response({'error': 'Invalid token response from Instagram'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Find or create user (parent) in your system
+        username = f'insta_{user_id}'
+        user, created = User.objects.get_or_create(username=username, defaults={'email': f'{username}@example.com'})
+        logger.info(f"User {'created' if created else 'found'}: {username}")
+
+        # Issue JWT tokens
+        refresh = RefreshToken.for_user(user)
+        access = str(refresh.access_token)
+        logger.info(f"Issued JWT tokens for user {username}")
+
+        return Response({'access': access, 'refresh': str(refresh)})
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
