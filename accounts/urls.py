@@ -7,12 +7,13 @@ from .views import (
     get_toxic_comments,
     delete_child,
     verify_child_login,
-    InstagramOAuthLoginView
+    InstagramOAuthLoginView,
+    CustomLoginView
 )
 
 urlpatterns = [
     path('signup/', ParentSignupView.as_view(), name='parent-signup'),
-    path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('login/', CustomLoginView.as_view(), name='custom_login'),
     path('login/instagram/', InstagramOAuthLoginView.as_view(), name='instagram-oauth-login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('toxic-comments/', get_toxic_comments, name='toxic-comments'),

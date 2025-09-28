@@ -2,6 +2,10 @@ from rest_framework.views import APIView
 from django.conf import settings
 import requests
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 # --- Instagram OAuth Login View ---
 class InstagramOAuthLoginView(APIView):
     """
@@ -192,3 +196,34 @@ def get_toxic_comments(request):
         "created_at": c.created_at
     } for c in toxic_comments]
     return Response(data)
+
+# --- Custom Login View ---
+class CustomLoginView(APIView):
+    """
+    Custom login view that returns both tokens and user data
+    """
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        
+        if not username or not password:
+            return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = authenticate(username=username, password=password)
+        if not user:
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        refresh = RefreshToken.for_user(user)
+        access = str(refresh.access_token)
+        
+        return Response({
+            'tokens': {
+                'access': access,
+                'refresh': str(refresh)
+            },
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            }
+        })

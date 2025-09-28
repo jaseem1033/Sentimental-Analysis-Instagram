@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Sentiment Dashboard Design System - Modern SaaS Interface */
+
+@layer base {
+  :root {
+    /* Base colors - Clean whites and grays */
+    --background: 0 0% 99%;
+    --foreground: 215 25% 27%;
+    
+    /* Card system */
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 27%;
+    
+    /* Primary brand - Modern blue */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 221 83% 45%;
+    --primary-light: 221 83% 97%;
+    
+    /* Secondary accent - Purple */
+    --secondary: 262 52% 47%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-hover: 262 52% 39%;
+    --secondary-light: 262 52% 97%;
+    
+    /* Sentiment colors */
+    --sentiment-positive: 142 71% 45%;
+    --sentiment-neutral: 43 89% 38%;
+    --sentiment-negative: 0 84% 60%;
+    
+    /* UI elements */
+    --muted: 215 20% 95%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 215 20% 95%;
+    --accent-foreground: 215 25% 27%;
+    
+    /* Interactive states */
+    --border: 215 20% 88%;
+    --input: 0 0% 100%;
+    --ring: 221 83% 53%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 27%;
+    
+    /* Design system extensions */
+    --radius: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    --gradient-card: linear-gradient(135deg, hsl(var(--card)), hsl(var(--muted)));
+    --gradient-sentiment: linear-gradient(90deg, hsl(var(--sentiment-positive)), hsl(var(--sentiment-neutral)), hsl(var(--sentiment-negative)));
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(215 25% 27% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(215 25% 27% / 0.1), 0 2px 4px -1px hsl(215 25% 27% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(215 25% 27% / 0.1), 0 4px 6px -2px hsl(215 25% 27% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(215 25% 27% / 0.1), 0 10px 10px -5px hsl(215 25% 27% / 0.04);
+    
+    /* Animation */
+    --transition-all: all 0.2s ease-in-out;
+    --transition-colors: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+
+    /* Sidebar (legacy support) */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Base colors - Dark theme */
+    --background: 215 25% 9%;
+    --foreground: 0 0% 95%;
+    
+    /* Card system */
+    --card: 215 25% 12%;
+    --card-foreground: 0 0% 95%;
+    
+    /* Primary brand - Brighter blue for dark mode */
+    --primary: 221 83% 60%;
+    --primary-foreground: 215 25% 9%;
+    --primary-hover: 221 83% 65%;
+    --primary-light: 221 83% 8%;
+    
+    /* Secondary accent - Brighter purple */
+    --secondary: 262 52% 55%;
+    --secondary-foreground: 215 25% 9%;
+    --secondary-hover: 262 52% 60%;
+    --secondary-light: 262 52% 8%;
+    
+    /* Sentiment colors - Adjusted for dark mode */
+    --sentiment-positive: 142 71% 55%;
+    --sentiment-neutral: 43 89% 50%;
+    --sentiment-negative: 0 84% 65%;
+    
+    /* UI elements */
+    --muted: 215 25% 15%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 215 25% 15%;
+    --accent-foreground: 0 0% 95%;
+    
+    /* Interactive states */
+    --border: 215 25% 18%;
+    --input: 215 25% 12%;
+    --ring: 221 83% 60%;
+    --destructive: 0 84% 65%;
+    --destructive-foreground: 0 0% 95%;
+    
+    /* Popover */
+    --popover: 215 25% 12%;
+    --popover-foreground: 0 0% 95%;
+    
+    /* Design system extensions */
+    --radius: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+    
+    /* Gradients - Adjusted for dark mode */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    --gradient-card: linear-gradient(135deg, hsl(var(--card)), hsl(var(--muted)));
+    --gradient-sentiment: linear-gradient(90deg, hsl(var(--sentiment-positive)), hsl(var(--sentiment-neutral)), hsl(var(--sentiment-negative)));
+    
+    /* Shadows - Darker for dark mode */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.15);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.2), 0 2px 4px -1px hsl(0 0% 0% / 0.12);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.2), 0 4px 6px -2px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.25), 0 10px 10px -5px hsl(0 0% 0% / 0.1);
+    
+    /* Animation */
+    --transition-all: all 0.2s ease-in-out;
+    --transition-colors: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+
+    /* Sidebar (legacy support) */
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+@layer components {
+  /* Dashboard utilities */
+  .dashboard-card {
+    @apply bg-card border border-border rounded-lg shadow-md p-6 transition-all hover:shadow-lg;
+  }
+  
+  .sentiment-positive {
+    @apply text-sentiment-positive bg-sentiment-positive/10 border-sentiment-positive/20;
+  }
+  
+  .sentiment-neutral {
+    @apply text-sentiment-neutral bg-sentiment-neutral/10 border-sentiment-neutral/20;
+  }
+  
+  .sentiment-negative {
+    @apply text-sentiment-negative bg-sentiment-negative/10 border-sentiment-negative/20;
+  }
+  
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+}

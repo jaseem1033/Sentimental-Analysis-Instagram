@@ -13,7 +13,7 @@ urlpatterns = [
     path('', home),                                   # Root URL handler
     # Proxy OAuth callbacks from backend domain to frontend app, preserving query params
     path('auth/callback', lambda request: redirect(
-        f"http://localhost:8080/auth/callback?{request.META.get('QUERY_STRING', '')}"
+        f"http://localhost:8080/auth/instagram/callback?{request.META.get('QUERY_STRING', '')}"
     )),
     path('auth/instagram/callback', lambda request: redirect(
         f"http://localhost:8080/auth/instagram/callback?{request.META.get('QUERY_STRING', '')}"
