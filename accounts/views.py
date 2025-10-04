@@ -4,13 +4,16 @@ import requests
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 # --- Instagram OAuth Login View ---
 class InstagramOAuthLoginView(APIView):
     """
-    Accepts Instagram OAuth code, exchanges for access token, creates/authenticates user, returns JWT tokens.
+    Accepts Instagram OAuth code, exchanges for access token, creates child for authenticated user.
     """
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request):
         print("Instagram OAuth endpoint called with code:", request.data.get('code'))
         import logging
@@ -55,17 +58,64 @@ class InstagramOAuthLoginView(APIView):
             logger.error("Invalid token response from Instagram")
             return Response({'error': 'Invalid token response from Instagram'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Find or create user (parent) in your system
-        username = f'insta_{user_id}'
-        user, created = User.objects.get_or_create(username=username, defaults={'email': f'{username}@example.com'})
-        logger.info(f"User {'created' if created else 'found'}: {username}")
+        # Get Instagram user info
+        user_info_url = f'https://graph.instagram.com/{user_id}?fields=username&access_token={access_token}'
+        try:
+            user_info_resp = requests.get(user_info_url)
+            user_info_resp.raise_for_status()
+            user_info = user_info_resp.json()
+            instagram_username = user_info.get('username', f'user_{user_id}')
+        except Exception as e:
+            logger.error(f"Failed to get Instagram user info: {e}")
+            instagram_username = f'user_{user_id}'
 
-        # Issue JWT tokens
+        # Get the authenticated user (passed from the frontend)
+        user = request.user
+        logger.info(f"Using authenticated user: {user.username}")
+
+        # Create or update child account
+        from .models import Child
+        try:
+            child = Child.objects.get(username=instagram_username)
+            # Update existing child with new token
+            child.instagram_user_id = user_id
+            child.access_token = access_token
+            child.parent = user  # Transfer to current user
+            child.save()
+            child_created = False
+        except Child.DoesNotExist:
+            # Create new child
+            child = Child.objects.create(
+                parent=user,
+                username=instagram_username,
+                instagram_user_id=user_id,
+                access_token=access_token
+            )
+            child_created = True
+
+        logger.info(f"Child {'created' if child_created else 'updated'}: {instagram_username}")
+
+        # Generate new JWT tokens for the authenticated user
         refresh = RefreshToken.for_user(user)
         access = str(refresh.access_token)
-        logger.info(f"Issued JWT tokens for user {username}")
+        logger.info(f"Issued JWT tokens for user {user.username}")
 
-        return Response({'access': access, 'refresh': str(refresh)})
+        # Return data in the format expected by frontend
+        return Response({
+            'access': access, 
+            'refresh': str(refresh),
+            'child': {
+                'id': child.id,
+                'username': child.username,
+                'instagram_user_id': child.instagram_user_id,
+                'created_at': child.created_at.isoformat() if hasattr(child, 'created_at') else None
+            },
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            }
+        })
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response

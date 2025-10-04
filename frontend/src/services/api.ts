@@ -121,9 +121,9 @@ export const childrenAPI = {
     // Convert backend child data to frontend Child type
     const childData: Child = {
       id: child.id.toString(),
-      instagram_username: child.instagram_username,
+      instagram_username: child.username, // Backend returns 'username' field
       instagram_user_id: child.instagram_user_id,
-      created_at: new Date().toISOString(), // Use current time since backend doesn't return created_at
+      created_at: child.created_at || new Date().toISOString(),
     };
     
     return { 
