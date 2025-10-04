@@ -56,15 +56,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const testLogin = () => {
-    // Set test authentication for debugging
+    // Set test authentication for debugging with real user jaseem1033
     const testTokens = {
-      access: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU5MDg2MzIxLCJpYXQiOjE3NTkwODYwMjEsImp0aSI6ImNhMTBmNTQzNmQzZjRkZWZhMTFhZmZiNjNkNDIwOTkzIiwidXNlcl9pZCI6IjcifQ.IQ1UcfwLuY08BS7TMEF4ikcsejcuVZHL0ZaPlweKvkI',
-      refresh: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTE3MjQyMSwiaWF0IjoxNzU5MDg2MDIxLCJqdGkiOiI5ZGIzYmEyNDRiYTA0MGViOGJiNDZmODU1OTEzNjNmYyIsInVzZXJfaWQiOiI3In0.rblGkx7bAD1pMx3ZcOXQ_gyP0I-dDeuWVish8f9PbE4'
+      access: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzU5NjA2MDk3LCJpYXQiOjE3NTk2MDU3OTcsImp0aSI6IjA3YjEyMGFhOWM3ZDQwYmJiNmE4YmMwNjU2ZGZlMGM1IiwidXNlcl9pZCI6IjEzIn0.aZqwgaEgE_u97IvvajYdvqIY4WbzrW4SoIzMceSaDhY',
+      refresh: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc1OTY5MTg4MiwiaWF0IjoxNzU5NjA1NDgyLCJqdGkiOiI4NDA0MzYxNjEzNjA0NzU0YjNjZGI4ZWY0NGQwMWRiOSIsInVzZXJfaWQiOiIxMyJ9.kUFn0hCfktNYEIQmSUA6dKSo10ye3hjfl6PVWHqGhno'
     };
     const testUser = {
-      id: '7',
-      username: 'testuser',
-      email: 'test@example.com',
+      id: '13',
+      username: 'jaseem1033',
+      email: 'jaseem1033@gmail.com',
       created_at: new Date().toISOString()
     };
     login(testTokens, testUser);

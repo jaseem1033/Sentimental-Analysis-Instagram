@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Instagram, Shield, Eye, AlertCircle } from 'lucide-react';
 import { childrenAPI } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
@@ -13,9 +14,43 @@ const ChildConsent: React.FC = () => {
   const { toast } = useToast();
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const instagramUsername = searchParams.get('username') || 'your_child';
+  const [instagramUsername, setInstagramUsername] = useState('');
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameExists, setUsernameExists] = useState(false);
   const oauthCode = searchParams.get('code');
+
+  const checkUsernameExists = async (username: string) => {
+    if (!username.trim()) {
+      setUsernameExists(false);
+      return;
+    }
+
+    setIsCheckingUsername(true);
+    try {
+      const response = await childrenAPI.getChildren();
+      const exists = response.data.some((child: any) => 
+        child.instagram_username.toLowerCase() === username.trim().toLowerCase()
+      );
+      setUsernameExists(exists);
+    } catch (error) {
+      console.error('Error checking username:', error);
+      setUsernameExists(false);
+    } finally {
+      setIsCheckingUsername(false);
+    }
+  };
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInstagramUsername(value);
+    
+    // Debounce the username check
+    const timeoutId = setTimeout(() => {
+      checkUsernameExists(value);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  };
 
   const handleAgree = async () => {
     if (!agreed) {
@@ -27,12 +62,31 @@ const ChildConsent: React.FC = () => {
       return;
     }
 
+    if (!instagramUsername.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Username Required',
+        description: 'Please enter the Instagram username.',
+      });
+      return;
+    }
+
+    if (usernameExists) {
+      toast({
+        variant: 'destructive',
+        title: 'Username Already Exists',
+        description: 'A child account with this username already exists.',
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // Store consent in sessionStorage
+      // Store consent and username in sessionStorage
       const consentCode = 'consent_' + Date.now();
       sessionStorage.setItem('consent_given', 'true');
       sessionStorage.setItem('consent_code', consentCode);
+      sessionStorage.setItem('instagram_username', instagramUsername.trim());
       
       // Redirect to Instagram OAuth for actual login
       const clientId = '751459870919841';
@@ -95,6 +149,27 @@ const ChildConsent: React.FC = () => {
             </ul>
           </div>
 
+          <div className="space-y-2">
+            <label htmlFor="instagram-username" className="text-sm font-medium text-foreground">
+              Instagram Username
+            </label>
+            <Input
+              id="instagram-username"
+              type="text"
+              placeholder="Enter Instagram username (without @)"
+              value={instagramUsername}
+              onChange={handleUsernameChange}
+              className={`w-full ${usernameExists ? 'border-red-500 focus:border-red-500' : ''}`}
+              disabled={isCheckingUsername}
+            />
+            {isCheckingUsername && (
+              <p className="text-sm text-muted-foreground">Checking username...</p>
+            )}
+            {usernameExists && instagramUsername.trim() && (
+              <p className="text-sm text-red-500">This username already exists</p>
+            )}
+          </div>
+
           <div className="bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg p-4">
             <div className="flex items-start space-x-3">
               <Checkbox
@@ -123,7 +198,7 @@ const ChildConsent: React.FC = () => {
             <Button
               onClick={handleAgree}
               className="flex-1"
-              disabled={!agreed || isLoading}
+              disabled={!agreed || !instagramUsername.trim() || isLoading || usernameExists || isCheckingUsername}
             >
               {isLoading ? 'Setting up...' : 'I Agree & Continue'}
             </Button>

@@ -19,7 +19,8 @@ class InstagramOAuthLoginView(APIView):
         import logging
         logger = logging.getLogger("instagram_oauth")
         code = request.data.get('code')
-        logger.info(f"Received OAuth code: {code}")
+        username = request.data.get('username')  # Instagram username from frontend
+        logger.info(f"Received OAuth code: {code}, username: {username}")
         if not code:
             logger.error("Missing code in request")
             return Response({'error': 'Missing code'}, status=status.HTTP_400_BAD_REQUEST)
@@ -58,16 +59,23 @@ class InstagramOAuthLoginView(APIView):
             logger.error("Invalid token response from Instagram")
             return Response({'error': 'Invalid token response from Instagram'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get Instagram user info
-        user_info_url = f'https://graph.instagram.com/{user_id}?fields=username&access_token={access_token}'
-        try:
-            user_info_resp = requests.get(user_info_url)
-            user_info_resp.raise_for_status()
-            user_info = user_info_resp.json()
-            instagram_username = user_info.get('username', f'user_{user_id}')
-        except Exception as e:
-            logger.error(f"Failed to get Instagram user info: {e}")
-            instagram_username = f'user_{user_id}'
+        # Use the username provided by the frontend, or try to get it from Instagram API
+        if username:
+            instagram_username = username
+            logger.info(f"Using username from frontend: {instagram_username}")
+        else:
+            # Fallback: try to get username from Instagram API
+            user_info_url = f'https://graph.instagram.com/{user_id}?fields=username&access_token={access_token}'
+            try:
+                user_info_resp = requests.get(user_info_url)
+                user_info_resp.raise_for_status()
+                user_info = user_info_resp.json()
+                instagram_username = user_info.get('username', f'user_{user_id}')
+                logger.info(f"Successfully retrieved Instagram username from API: {instagram_username}")
+            except Exception as e:
+                logger.error(f"Failed to get Instagram user info: {e}")
+                instagram_username = f'instagram_user_{user_id}'
+                logger.info(f"Using fallback Instagram username: {instagram_username}")
 
         # Get the authenticated user (passed from the frontend)
         user = request.user

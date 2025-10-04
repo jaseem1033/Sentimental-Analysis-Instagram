@@ -81,7 +81,14 @@ export const authAPI = {
 export const childrenAPI = {
   getChildren: async (): Promise<ApiResponse<Child[]>> => {
     const response = await api.get('/accounts/children/');
-    return { data: response.data };
+    // Transform backend response to frontend Child type
+    const children: Child[] = response.data.map((child: any) => ({
+      id: child.id.toString(),
+      instagram_username: child.username, // Map username to instagram_username
+      instagram_user_id: child.instagram_user_id,
+      created_at: child.created_at || new Date().toISOString(), // Add fallback for created_at
+    }));
+    return { data: children };
   },
 
   addChild: async (): Promise<void> => {
@@ -99,14 +106,14 @@ export const childrenAPI = {
     return { data: null };
   },
 
-  completeOAuth: async (code: string, consent: boolean): Promise<{ child: Child; tokens: { access: string; refresh: string }; user: User }> => {
+  completeOAuth: async (code: string, consent: boolean, username?: string): Promise<{ child: Child; tokens: { access: string; refresh: string }; user: User }> => {
     if (!consent) {
       throw new Error('User consent required');
     }
     
-    console.log('Making API call to /accounts/login/instagram/ with code:', code);
+    console.log('Making API call to /accounts/login/instagram/ with code:', code, 'username:', username);
     // Call backend to exchange Instagram Business API code for tokens and create child
-    const response = await api.post('/accounts/login/instagram/', { code });
+    const response = await api.post('/accounts/login/instagram/', { code, username });
     console.log('API response:', response.data);
     const { access, refresh, child, user } = response.data;
     
@@ -134,7 +141,7 @@ export const childrenAPI = {
   },
 
   deleteChild: async (childId: string): Promise<ApiResponse<null>> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const response = await api.delete(`/accounts/children/${childId}/delete/`);
     return { data: null };
   },
 };

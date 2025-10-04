@@ -35,15 +35,15 @@ const ChildDashboard: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Mock child data - in real app, fetch from API
-      const mockChild: Child = {
-        id,
-        instagram_username: 'sarah_teen',
-        instagram_user_id: '12345',
-        created_at: '2024-01-15T10:30:00Z',
-      };
+      // Fetch child data from API
+      const response = await childrenAPI.getChildren();
+      const childData = response.data.find((c: Child) => c.id === id);
       
-      setChild(mockChild);
+      if (childData) {
+        setChild(childData);
+      } else {
+        throw new Error('Child not found');
+      }
       await loadComments();
     } catch (error) {
       toast({

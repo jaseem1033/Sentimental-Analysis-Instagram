@@ -35,9 +35,10 @@ const InstagramCallback: React.FC = () => {
       }
 
       try {
-        // Check if consent was given
+        // Check if consent was given and get username
         const consentGiven = sessionStorage.getItem('consent_given') === 'true';
         const consentCode = sessionStorage.getItem('consent_code');
+        const instagramUsername = sessionStorage.getItem('instagram_username');
 
         if (!consentGiven) {
           setStatus('error');
@@ -46,20 +47,28 @@ const InstagramCallback: React.FC = () => {
           return;
         }
 
+        if (!instagramUsername) {
+          setStatus('error');
+          setMessage('Instagram username not found. Please start the process again.');
+          setTimeout(() => navigate('/dashboard'), 3000);
+          return;
+        }
+
         setMessage('Adding child account...');
         console.log('Starting OAuth completion with code:', code);
 
-        // Complete OAuth with Instagram code and consent
+        // Complete OAuth with Instagram code, consent, and username
         console.log('Calling childrenAPI.completeOAuth...');
-        const result = await childrenAPI.completeOAuth(code, true);
+        const result = await childrenAPI.completeOAuth(code, true, instagramUsername);
         console.log('OAuth completion result:', result);
 
         // Update AuthContext with the user and tokens
         login(result.tokens, result.user);
 
-        // Clear consent from storage
+        // Clear consent and username from storage
         sessionStorage.removeItem('consent_code');
         sessionStorage.removeItem('consent_given');
+        sessionStorage.removeItem('instagram_username');
 
         setStatus('success');
         setMessage('Account added successfully! Your child\'s Instagram account is now being monitored.');
