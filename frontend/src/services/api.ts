@@ -36,32 +36,7 @@ const mockResponses = {
       created_at: '2024-02-20T14:15:00Z',
     },
   ],
-  comments: [
-    {
-      id: '1',
-      text: 'Love this post! So inspiring 💕',
-      sentiment: 'positive' as const,
-      confidence: 0.95,
-      created_at: '2024-03-10T09:00:00Z',
-      instagram_id: '001',
-    },
-    {
-      id: '2',
-      text: 'This is okay I guess',
-      sentiment: 'neutral' as const,
-      confidence: 0.78,
-      created_at: '2024-03-10T10:30:00Z',
-      instagram_id: '002',
-    },
-    {
-      id: '3',
-      text: 'I hate this content',
-      sentiment: 'negative' as const,
-      confidence: 0.92,
-      created_at: '2024-03-10T11:15:00Z',
-      instagram_id: '003',
-    },
-  ],
+  comments: [],
 };
 
 // Auth API
