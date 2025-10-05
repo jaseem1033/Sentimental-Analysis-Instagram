@@ -21,11 +21,14 @@ class Child(models.Model):
     Initially instagram_user_id and access_token can be blank until verified.
     """
     parent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='children')
-    username = models.CharField(max_length=100, unique=True)
+    username = models.CharField(max_length=100)
     instagram_user_id = models.CharField(max_length=100, blank=True, null=True)
     access_token = models.TextField(blank=True, null=True)
     consent_given = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['username', 'parent']
 
     def __str__(self):
         return f"{self.username} (Child of {self.parent.username})"

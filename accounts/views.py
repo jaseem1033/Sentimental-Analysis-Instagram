@@ -100,19 +100,20 @@ class InstagramOAuthLoginView(APIView):
         user = request.user
         logger.info(f"Using authenticated user: {user.username}")
 
-        # Create or update child account using pre-populated credentials
+        # Create child account using pre-populated credentials
         from .models import Child
         try:
-            child = Child.objects.get(username=instagram_username)
-            # Update existing child with pre-populated credentials
+            # Check if this child already exists for this specific parent
+            child = Child.objects.get(username=instagram_username, parent=user)
+            # Update existing child with pre-populated credentials (but keep same parent)
             child.instagram_user_id = instagram_user_id
             child.access_token = access_token
-            child.parent = user  # Transfer to current user
             child.save()
             child_created = False
-            logger.info(f"Updated existing child with pre-populated credentials")
+            logger.info(f"Updated existing child with pre-populated credentials for same parent")
         except Child.DoesNotExist:
-            # Create new child with pre-populated credentials
+            # Create new child with pre-populated credentials for this parent
+            # Multiple parents can have the same child account
             child = Child.objects.create(
                 parent=user,
                 username=instagram_username,
@@ -120,7 +121,7 @@ class InstagramOAuthLoginView(APIView):
                 access_token=access_token
             )
             child_created = True
-            logger.info(f"Created new child with pre-populated credentials")
+            logger.info(f"Created new child with pre-populated credentials for parent {user.username}")
 
         logger.info(f"Child {'created' if child_created else 'updated'}: {instagram_username}")
 
