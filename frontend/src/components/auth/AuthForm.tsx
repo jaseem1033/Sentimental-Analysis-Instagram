@@ -20,7 +20,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     password: '',
   });
   const [isLoading, setIsLoading] = useState(false);
-  const { login, testLogin } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -199,16 +199,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
             </p>
           </div>
           
-          {/* Test Login Button for Development */}
-          <div className="mt-4 text-center">
-            <Button 
-              variant="outline" 
-              onClick={testLogin}
-              className="w-full"
-            >
-              Test Login (Development)
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

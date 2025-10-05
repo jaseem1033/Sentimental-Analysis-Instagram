@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,8 +15,8 @@ const ChildConsent: React.FC = () => {
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [instagramUsername, setInstagramUsername] = useState('');
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [usernameExists, setUsernameExists] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const oauthCode = searchParams.get('code');
 
   const checkUsernameExists = async (username: string) => {
@@ -25,7 +25,6 @@ const ChildConsent: React.FC = () => {
       return;
     }
 
-    setIsCheckingUsername(true);
     try {
       const response = await childrenAPI.getChildren();
       const exists = response.data.some((child: any) => 
@@ -35,8 +34,6 @@ const ChildConsent: React.FC = () => {
     } catch (error) {
       console.error('Error checking username:', error);
       setUsernameExists(false);
-    } finally {
-      setIsCheckingUsername(false);
     }
   };
 
@@ -44,12 +41,15 @@ const ChildConsent: React.FC = () => {
     const value = e.target.value;
     setInstagramUsername(value);
     
-    // Debounce the username check
-    const timeoutId = setTimeout(() => {
+    // Clear previous timeout to prevent multiple calls
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
+    // Set new timeout for debounced check
+    timeoutRef.current = setTimeout(() => {
       checkUsernameExists(value);
     }, 500);
-
-    return () => clearTimeout(timeoutId);
   };
 
   const handleAgree = async () => {
@@ -160,11 +160,7 @@ const ChildConsent: React.FC = () => {
               value={instagramUsername}
               onChange={handleUsernameChange}
               className={`w-full ${usernameExists ? 'border-red-500 focus:border-red-500' : ''}`}
-              disabled={isCheckingUsername}
             />
-            {isCheckingUsername && (
-              <p className="text-sm text-muted-foreground">Checking username...</p>
-            )}
             {usernameExists && instagramUsername.trim() && (
               <p className="text-sm text-red-500">This username already exists</p>
             )}
@@ -198,7 +194,7 @@ const ChildConsent: React.FC = () => {
             <Button
               onClick={handleAgree}
               className="flex-1"
-              disabled={!agreed || !instagramUsername.trim() || isLoading || usernameExists || isCheckingUsername}
+              disabled={!agreed || !instagramUsername.trim() || isLoading || usernameExists}
             >
               {isLoading ? 'Setting up...' : 'I Agree & Continue'}
             </Button>
