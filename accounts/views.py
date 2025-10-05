@@ -307,3 +307,81 @@ class CustomLoginView(APIView):
                 'email': user.email
             }
         })
+
+
+# --- Comments API Views ---
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_child_comments(request, child_id):
+    """
+    Get all comments for a specific child account
+    """
+    try:
+        child = Child.objects.get(id=child_id, parent=request.user)
+        comments = Comment.objects.filter(child=child).order_by('-created_at')
+        
+        # Serialize comments data
+        comments_data = []
+        for comment in comments:
+            comments_data.append({
+                'id': comment.id,
+                'text': comment.text,
+                'sentiment': comment.sentiment,
+                'confidence': 0.85,  # Placeholder - you can add confidence field to model later
+                'created_at': comment.created_at.isoformat(),
+                'instagram_id': comment.comment_id,
+                'username': comment.username,
+                'post_id': comment.post_id
+            })
+        
+        return Response(comments_data)
+    
+    except Child.DoesNotExist:
+        return Response({'error': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def fetch_child_comments(request, child_id):
+    """
+    Trigger fetching new comments for a specific child account
+    """
+    try:
+        child = Child.objects.get(id=child_id, parent=request.user)
+        
+        # Import and run the fetch_comments command for this specific child
+        from django.core.management import call_command
+        from io import StringIO
+        
+        # Capture command output
+        output = StringIO()
+        call_command('fetch_comments', stdout=output)
+        
+        # Get updated comments
+        comments = Comment.objects.filter(child=child).order_by('-created_at')
+        
+        # Serialize comments data
+        comments_data = []
+        for comment in comments:
+            comments_data.append({
+                'id': comment.id,
+                'text': comment.text,
+                'sentiment': comment.sentiment,
+                'confidence': 0.85,  # Placeholder
+                'created_at': comment.created_at.isoformat(),
+                'instagram_id': comment.comment_id,
+                'username': comment.username,
+                'post_id': comment.post_id
+            })
+        
+        return Response({
+            'message': 'Comments fetched successfully',
+            'comments': comments_data
+        })
+    
+    except Child.DoesNotExist:
+        return Response({'error': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

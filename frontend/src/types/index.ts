@@ -14,16 +14,19 @@ export interface Child {
 export interface Comment {
   id: string;
   text: string;
-  sentiment: 'positive' | 'neutral' | 'negative';
+  sentiment: 'positive' | 'neutral' | 'negative' | 'toxic';
   confidence: number;
   created_at: string;
   instagram_id: string;
+  username?: string;
+  post_id?: string;
 }
 
 export interface SentimentStats {
   positive: number;
   neutral: number;
   negative: number;
+  toxic: number;
   total: number;
 }
 

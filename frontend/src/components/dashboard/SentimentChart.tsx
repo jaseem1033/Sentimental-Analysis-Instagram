@@ -12,6 +12,7 @@ const SentimentChart: React.FC<SentimentChartProps> = ({ stats }) => {
     { name: 'Positive', value: stats.positive, color: 'hsl(var(--sentiment-positive))' },
     { name: 'Neutral', value: stats.neutral, color: 'hsl(var(--sentiment-neutral))' },
     { name: 'Negative', value: stats.negative, color: 'hsl(var(--sentiment-negative))' },
+    { name: 'Toxic', value: stats.toxic, color: '#ef4444' },
   ];
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -97,7 +98,7 @@ const SentimentChart: React.FC<SentimentChartProps> = ({ stats }) => {
         </div>
         
         {/* Quick stats */}
-        <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-border">
+        <div className="grid grid-cols-4 gap-4 mt-6 pt-4 border-t border-border">
           <div className="text-center">
             <div className="text-2xl font-bold text-sentiment-positive">
               {((stats.positive / stats.total) * 100).toFixed(1)}%
@@ -115,6 +116,12 @@ const SentimentChart: React.FC<SentimentChartProps> = ({ stats }) => {
               {((stats.negative / stats.total) * 100).toFixed(1)}%
             </div>
             <div className="text-xs text-muted-foreground">Negative</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-red-500">
+              {((stats.toxic / stats.total) * 100).toFixed(1)}%
+            </div>
+            <div className="text-xs text-muted-foreground">Toxic</div>
           </div>
         </div>
       </CardContent>

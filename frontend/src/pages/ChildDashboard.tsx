@@ -96,7 +96,7 @@ const ChildDashboard: React.FC = () => {
         acc.total++;
         return acc;
       },
-      { positive: 0, neutral: 0, negative: 0, total: 0 }
+      { positive: 0, neutral: 0, negative: 0, toxic: 0, total: 0 }
     );
     
     return stats;
@@ -185,7 +185,7 @@ const ChildDashboard: React.FC = () => {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <Card className="dashboard-card">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -235,6 +235,20 @@ const ChildDashboard: React.FC = () => {
                 </div>
                 <div className="w-6 h-6 bg-sentiment-negative/20 rounded-full flex items-center justify-center">
                   <div className="w-2 h-2 bg-sentiment-negative rounded-full"></div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="dashboard-card border-red-500/20">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Toxic</p>
+                  <p className="text-2xl font-bold text-red-500">{sentimentStats.toxic}</p>
+                </div>
+                <div className="w-6 h-6 bg-red-500/20 rounded-full flex items-center justify-center">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                 </div>
               </div>
             </CardContent>

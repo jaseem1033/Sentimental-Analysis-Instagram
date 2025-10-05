@@ -8,7 +8,9 @@ from .views import (
     delete_child,
     verify_child_login,
     InstagramOAuthLoginView,
-    CustomLoginView
+    CustomLoginView,
+    get_child_comments,
+    fetch_child_comments
 )
 
 urlpatterns = [
@@ -21,4 +23,6 @@ urlpatterns = [
     path('children/<int:child_id>/delete/', delete_child, name='delete-child'),
     path('children/verify-login/', verify_child_login, name='verify-child-login'),
     path('comments/update-classification/', update_comments_classification, name='update-comments-classification'),
+    path('children/<int:child_id>/comments/', get_child_comments, name='get-child-comments'),
+    path('children/<int:child_id>/fetch-comments/', fetch_child_comments, name='fetch-child-comments'),
 ]

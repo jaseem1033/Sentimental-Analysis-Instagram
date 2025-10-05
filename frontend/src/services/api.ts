@@ -124,13 +124,13 @@ export const childrenAPI = {
 // Comments API
 export const commentsAPI = {
   getComments: async (childId: string): Promise<ApiResponse<Comment[]>> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { data: mockResponses.comments };
+    const response = await api.get(`/accounts/children/${childId}/comments/`);
+    return { data: response.data };
   },
 
   fetchComments: async (childId: string): Promise<ApiResponse<Comment[]>> => {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    return { data: mockResponses.comments };
+    const response = await api.post(`/accounts/children/${childId}/fetch-comments/`);
+    return { data: response.data.comments };
   },
 };
 
