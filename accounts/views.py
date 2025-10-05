@@ -77,29 +77,50 @@ class InstagramOAuthLoginView(APIView):
                 instagram_username = f'instagram_user_{user_id}'
                 logger.info(f"Using fallback Instagram username: {instagram_username}")
 
+        # Check if this Instagram account exists in our pre-populated database
+        from .models import InstagramChild
+        try:
+            pre_populated_account = InstagramChild.objects.get(username=instagram_username)
+            logger.info(f"Found pre-populated account for {instagram_username}")
+            
+            # Use the pre-populated credentials instead of OAuth credentials
+            instagram_user_id = pre_populated_account.instagram_user_id
+            access_token = pre_populated_account.access_token
+            
+            logger.info(f"Using pre-populated credentials: ID={instagram_user_id}, Token={'Yes' if access_token else 'No'}")
+            
+        except InstagramChild.DoesNotExist:
+            logger.error(f"No pre-populated account found for username: {instagram_username}")
+            return Response({
+                'error': 'Account not configured for monitoring',
+                'message': f'The Instagram account "{instagram_username}" is not configured for monitoring. Please contact support.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         # Get the authenticated user (passed from the frontend)
         user = request.user
         logger.info(f"Using authenticated user: {user.username}")
 
-        # Create or update child account
+        # Create or update child account using pre-populated credentials
         from .models import Child
         try:
             child = Child.objects.get(username=instagram_username)
-            # Update existing child with new token
-            child.instagram_user_id = user_id
+            # Update existing child with pre-populated credentials
+            child.instagram_user_id = instagram_user_id
             child.access_token = access_token
             child.parent = user  # Transfer to current user
             child.save()
             child_created = False
+            logger.info(f"Updated existing child with pre-populated credentials")
         except Child.DoesNotExist:
-            # Create new child
+            # Create new child with pre-populated credentials
             child = Child.objects.create(
                 parent=user,
                 username=instagram_username,
-                instagram_user_id=user_id,
+                instagram_user_id=instagram_user_id,
                 access_token=access_token
             )
             child_created = True
+            logger.info(f"Created new child with pre-populated credentials")
 
         logger.info(f"Child {'created' if child_created else 'updated'}: {instagram_username}")
 
