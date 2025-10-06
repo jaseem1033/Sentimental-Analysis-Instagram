@@ -41,7 +41,7 @@ class Comment(models.Model):
     """
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="comments")
     post_id = models.CharField(max_length=200)
-    comment_id = models.CharField(max_length=200, unique=True)
+    comment_id = models.CharField(max_length=200)
     username = models.CharField(max_length=200)  # Commenter's username
     text = models.TextField()
 

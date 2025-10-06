@@ -229,24 +229,24 @@ def verify_child_login(request):
 @permission_classes([IsAuthenticated])
 def delete_child(request, child_id):
     """
-    Delete a child and ALL comments for that username.
-    This ensures a fresh start when re-adding the same child account.
+    Delete a child and only the comments linked to that specific child.
+    Other parents with the same child account will keep their comments.
     """
     try:
         child = Child.objects.get(id=child_id, parent=request.user)
         username = child.username
         
-        # Count total comments for this username before deletion
-        total_comments_before = Comment.objects.filter(child__username=username).count()
+        # Count comments linked to this specific child only
+        comments_for_this_child = Comment.objects.filter(child=child).count()
         
-        # Delete ALL comments for this username (regardless of which child they're linked to)
-        Comment.objects.filter(child__username=username).delete()
+        # Delete only comments linked to this specific child
+        Comment.objects.filter(child=child).delete()
         
         # Delete the child
         child.delete()
         
         return Response({
-            "message": f"Child and ALL {total_comments_before} comments for '{username}' deleted successfully. Fresh start when re-adding."
+            "message": f"Child and {comments_for_this_child} comments for this parent deleted successfully. Other parents with the same child account are unaffected."
         })
             
     except Child.DoesNotExist:
@@ -327,26 +327,38 @@ class CustomLoginView(APIView):
 def get_child_comments(request, child_id):
     """
     Get all comments for a specific child account.
-    Always returns comments from any child with the same username to share data.
+    Returns unique comments based on comment_id to avoid duplicates from multiple parents.
     """
     try:
         child = Child.objects.get(id=child_id, parent=request.user)
         
-        # Get comments linked to this specific child only
-        comments = Comment.objects.filter(child=child).order_by('-created_at')
+        # Get all comments for this username and deduplicate by comment_id
+        all_comments = Comment.objects.filter(
+            child__username=child.username
+        ).values(
+            'comment_id', 'text', 'sentiment', 'created_at', 'username', 'post_id'
+        ).order_by('-created_at')
+        
+        # Deduplicate by comment_id using Python
+        seen_comment_ids = set()
+        unique_comments = []
+        for comment in all_comments:
+            if comment['comment_id'] not in seen_comment_ids:
+                seen_comment_ids.add(comment['comment_id'])
+                unique_comments.append(comment)
         
         # Serialize comments data
         comments_data = []
-        for comment in comments:
+        for comment in unique_comments:
             comments_data.append({
-                'id': comment.id,
-                'text': comment.text,
-                'sentiment': comment.sentiment,
+                'id': comment['comment_id'],  # Use comment_id as unique identifier
+                'text': comment['text'],
+                'sentiment': comment['sentiment'],
                 'confidence': 0.85,  # Placeholder - you can add confidence field to model later
-                'created_at': comment.created_at.isoformat(),
-                'instagram_id': comment.comment_id,
-                'username': comment.username,
-                'post_id': comment.post_id
+                'created_at': comment['created_at'].isoformat(),
+                'instagram_id': comment['comment_id'],
+                'username': comment['username'],
+                'post_id': comment['post_id']
             })
         
         return Response(comments_data)

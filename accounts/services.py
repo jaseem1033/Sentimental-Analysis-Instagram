@@ -36,7 +36,20 @@ def fetch_comments_for_child(child: Child):
                     total_comments_processed += 1
                     # Check if comment exists for this specific child
                     if not Comment.objects.filter(comment_id=comment["id"], child=child).exists():
-                        sentiment = classify_comment(comment["text"])
+                        # Check if this comment already exists for any child with the same username
+                        existing_comment = Comment.objects.filter(
+                            comment_id=comment["id"], 
+                            child__username=child.username
+                        ).first()
+                        
+                        if existing_comment:
+                            # If comment exists for another child with same username, 
+                            # create a copy for this child
+                            sentiment = existing_comment.sentiment
+                        else:
+                            # New comment, classify sentiment
+                            sentiment = classify_comment(comment["text"])
+                        
                         Comment.objects.create(
                             child=child,
                             comment_id=comment["id"],
