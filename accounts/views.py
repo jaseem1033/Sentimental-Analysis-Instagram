@@ -351,15 +351,15 @@ def fetch_child_comments(request, child_id):
     try:
         child = Child.objects.get(id=child_id, parent=request.user)
         
-        # Import and run the fetch_comments command for this specific child
-        from django.core.management import call_command
-        from io import StringIO
+        # Use the services.py function to fetch comments for this specific child only
+        from .services import fetch_comments_for_child
         
-        # Capture command output
-        output = StringIO()
-        call_command('fetch_comments', stdout=output)
+        result = fetch_comments_for_child(child)
         
-        # Get updated comments
+        if "error" in result:
+            return Response({'error': result['error']}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get updated comments for this specific child
         comments = Comment.objects.filter(child=child).order_by('-created_at')
         
         # Serialize comments data
@@ -377,7 +377,7 @@ def fetch_child_comments(request, child_id):
             })
         
         return Response({
-            'message': 'Comments fetched successfully',
+            'message': f'Comments fetched successfully. {result.get("new_comments", 0)} new comments added.',
             'comments': comments_data
         })
     

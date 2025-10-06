@@ -37,14 +37,15 @@ def fetch_comments_for_child(child: Child):
         if "comments" in media:
             for comment in media["comments"]["data"]:
                 if not Comment.objects.filter(comment_id=comment["id"]).exists():
-                    classification = classify_comment(comment["text"])
+                    sentiment = classify_comment(comment["text"])
                     Comment.objects.create(
                         child=child,
                         comment_id=comment["id"],
+                        post_id=media["id"],
                         text=comment["text"],
                         username=comment["username"],
                         timestamp=parse_datetime(comment["timestamp"]),
-                        classification=classification
+                        sentiment=sentiment
                     )
                     new_comments_count += 1
 
