@@ -20,6 +20,46 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Handle token refresh on 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (refreshToken) {
+        try {
+          const response = await axios.post(`${API_BASE_URL}/accounts/token/refresh/`, {
+            refresh: refreshToken
+          });
+          
+          const { access } = response.data;
+          localStorage.setItem('access_token', access);
+          
+          // Retry the original request with new token
+          originalRequest.headers.Authorization = `Bearer ${access}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          // Refresh failed, redirect to login
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // No refresh token, redirect to login
+        localStorage.removeItem('access_token');
+        window.location.href = '/login';
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 // Mock API responses for now
 const mockResponses = {
   children: [
