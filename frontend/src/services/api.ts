@@ -26,7 +26,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Skip token refresh for login and signup endpoints
+    const isAuthEndpoint = originalRequest.url?.includes('/accounts/login/') || 
+                          originalRequest.url?.includes('/accounts/signup/') ||
+                          originalRequest.url?.includes('/accounts/token/refresh/');
+    
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
       
       const refreshToken = localStorage.getItem('refresh_token');
