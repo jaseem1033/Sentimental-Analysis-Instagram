@@ -229,37 +229,25 @@ def verify_child_login(request):
 @permission_classes([IsAuthenticated])
 def delete_child(request, child_id):
     """
-    Delete a child and all associated comments.
-    If this is the last child with this username, delete all comments for that username.
+    Delete a child and ALL comments for that username.
+    This ensures a fresh start when re-adding the same child account.
     """
     try:
         child = Child.objects.get(id=child_id, parent=request.user)
         username = child.username
         
-        # Count how many other children exist with the same username
-        other_children_count = Child.objects.filter(username=username).exclude(id=child_id).count()
+        # Count total comments for this username before deletion
+        total_comments_before = Comment.objects.filter(child__username=username).count()
         
-        # First, delete all comments linked to this specific child
-        child_comments_count = child.comments.count()
-        child.comments.all().delete()
+        # Delete ALL comments for this username (regardless of which child they're linked to)
+        Comment.objects.filter(child__username=username).delete()
         
         # Delete the child
         child.delete()
         
-        # If this was the last child with this username, delete all remaining comments for this username
-        if other_children_count == 0:
-            # Delete any remaining comments for this username (in case they weren't linked to the deleted child)
-            remaining_comments = Comment.objects.filter(child__username=username)
-            deleted_comments_count = remaining_comments.count()
-            remaining_comments.delete()
-            
-            return Response({
-                "message": f"Child and all associated comments deleted successfully. {child_comments_count} child comments and {deleted_comments_count} additional comments removed."
-            })
-        else:
-            return Response({
-                "message": f"Child deleted successfully. {child_comments_count} comments removed. Comments remain for other parents with the same child account."
-            })
+        return Response({
+            "message": f"Child and ALL {total_comments_before} comments for '{username}' deleted successfully. Fresh start when re-adding."
+        })
             
     except Child.DoesNotExist:
         return Response({"error": "Child not found or unauthorized"}, status=status.HTTP_404_NOT_FOUND)
@@ -344,8 +332,8 @@ def get_child_comments(request, child_id):
     try:
         child = Child.objects.get(id=child_id, parent=request.user)
         
-        # Always get comments from any child with the same username
-        comments = Comment.objects.filter(child__username=child.username).order_by('-created_at')
+        # Get comments linked to this specific child only
+        comments = Comment.objects.filter(child=child).order_by('-created_at')
         
         # Serialize comments data
         comments_data = []
@@ -379,22 +367,16 @@ def fetch_child_comments(request, child_id):
     try:
         child = Child.objects.get(id=child_id, parent=request.user)
         
-        # Find the first child with this username (the one that likely has comments)
-        first_child = Child.objects.filter(username=child.username).first()
-        
-        if not first_child:
-            return Response({'error': 'No child found with this username'}, status=status.HTTP_404_NOT_FOUND)
-        
-        # Use the services.py function to fetch comments for the first child
+        # Use the services.py function to fetch comments for this specific child
         from .services import fetch_comments_for_child
         
-        result = fetch_comments_for_child(first_child)
+        result = fetch_comments_for_child(child)
         
         if "error" in result:
             return Response({'error': result['error']}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Get updated comments for any child with this username (shared data)
-        comments = Comment.objects.filter(child__username=child.username).order_by('-created_at')
+        # Get updated comments for this specific child only
+        comments = Comment.objects.filter(child=child).order_by('-created_at')
         
         # Serialize comments data
         comments_data = []
