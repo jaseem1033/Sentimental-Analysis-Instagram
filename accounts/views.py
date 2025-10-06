@@ -229,16 +229,40 @@ def verify_child_login(request):
 @permission_classes([IsAuthenticated])
 def delete_child(request, child_id):
     """
-    Delete a child. Related comments will be automatically removed
-    due to `on_delete=models.CASCADE` in Comment model.
+    Delete a child and all associated comments.
+    If this is the last child with this username, delete all comments for that username.
     """
     try:
         child = Child.objects.get(id=child_id, parent=request.user)
+        username = child.username
+        
+        # Count how many other children exist with the same username
+        other_children_count = Child.objects.filter(username=username).exclude(id=child_id).count()
+        
+        # First, delete all comments linked to this specific child
+        child_comments_count = child.comments.count()
+        child.comments.all().delete()
+        
+        # Delete the child
+        child.delete()
+        
+        # If this was the last child with this username, delete all remaining comments for this username
+        if other_children_count == 0:
+            # Delete any remaining comments for this username (in case they weren't linked to the deleted child)
+            remaining_comments = Comment.objects.filter(child__username=username)
+            deleted_comments_count = remaining_comments.count()
+            remaining_comments.delete()
+            
+            return Response({
+                "message": f"Child and all associated comments deleted successfully. {child_comments_count} child comments and {deleted_comments_count} additional comments removed."
+            })
+        else:
+            return Response({
+                "message": f"Child deleted successfully. {child_comments_count} comments removed. Comments remain for other parents with the same child account."
+            })
+            
     except Child.DoesNotExist:
         return Response({"error": "Child not found or unauthorized"}, status=status.HTTP_404_NOT_FOUND)
-
-    child.delete()
-    return Response({"message": "Child and related comments deleted successfully"})
 
 
 @api_view(['POST'])
