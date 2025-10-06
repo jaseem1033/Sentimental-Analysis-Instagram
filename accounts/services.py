@@ -1,12 +1,7 @@
 import requests
 from .models import Child, Comment
 from django.utils.dateparse import parse_datetime
-
-def classify_comment(text):
-    toxic_keywords = ["hate", "stupid", "idiot", "ugly", "dumb"]
-    if any(word in text.lower() for word in toxic_keywords):
-        return "toxic"
-    return "neutral"
+from .utils import classify_comment
 
 def fetch_comments_for_child(child: Child):
     """
