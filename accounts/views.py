@@ -315,18 +315,13 @@ class CustomLoginView(APIView):
 def get_child_comments(request, child_id):
     """
     Get all comments for a specific child account.
-    If the child has no comments but other children with the same username do,
-    return comments from any child with the same username.
+    Always returns comments from any child with the same username to share data.
     """
     try:
         child = Child.objects.get(id=child_id, parent=request.user)
         
-        # First try to get comments for this specific child
-        comments = Comment.objects.filter(child=child).order_by('-created_at')
-        
-        # If no comments found, get comments from any child with the same username
-        if not comments.exists():
-            comments = Comment.objects.filter(child__username=child.username).order_by('-created_at')
+        # Always get comments from any child with the same username
+        comments = Comment.objects.filter(child__username=child.username).order_by('-created_at')
         
         # Serialize comments data
         comments_data = []
@@ -354,21 +349,28 @@ def get_child_comments(request, child_id):
 @permission_classes([IsAuthenticated])
 def fetch_child_comments(request, child_id):
     """
-    Trigger fetching new comments for a specific child account
+    Trigger fetching new comments for a specific child account.
+    Fetches comments for the first child with this username to avoid duplicates.
     """
     try:
         child = Child.objects.get(id=child_id, parent=request.user)
         
-        # Use the services.py function to fetch comments for this specific child only
+        # Find the first child with this username (the one that likely has comments)
+        first_child = Child.objects.filter(username=child.username).first()
+        
+        if not first_child:
+            return Response({'error': 'No child found with this username'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Use the services.py function to fetch comments for the first child
         from .services import fetch_comments_for_child
         
-        result = fetch_comments_for_child(child)
+        result = fetch_comments_for_child(first_child)
         
         if "error" in result:
             return Response({'error': result['error']}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Get updated comments for this specific child
-        comments = Comment.objects.filter(child=child).order_by('-created_at')
+        # Get updated comments for any child with this username (shared data)
+        comments = Comment.objects.filter(child__username=child.username).order_by('-created_at')
         
         # Serialize comments data
         comments_data = []
