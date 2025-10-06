@@ -37,15 +37,36 @@ def classify_comment(text):
     # 0️⃣ Pre-check for obvious cases (fallback for AI model limitations)
     text_lower = text.lower().strip()
     
+    # Handle negations properly
+    negation_words = ["not", "no", "never", "n't", "isn't", "don't", "won't", "can't", "shouldn't"]
+    has_negation = any(neg in text_lower for neg in negation_words)
+    
     # Obvious negative words
     obvious_negative = ["bad", "terrible", "awful", "horrible", "worst", "hate", "dislike"]
-    if any(word in text_lower for word in obvious_negative):
-        return "negative"
+    negative_words_found = [word for word in obvious_negative if word in text_lower]
     
     # Obvious positive words  
     obvious_positive = ["good", "great", "awesome", "amazing", "fantastic", "love", "excellent"]
-    if any(word in text_lower for word in obvious_positive):
-        return "positive"
+    positive_words_found = [word for word in obvious_positive if word in text_lower]
+    
+    # Handle negations: if negation + positive word = negative, if negation + negative word = positive
+    if has_negation:
+        if negative_words_found and not positive_words_found:
+            return "positive"  # "not bad" = positive
+        elif positive_words_found and not negative_words_found:
+            return "negative"  # "not good" = negative
+        elif negative_words_found and positive_words_found:
+            # Mixed case, let AI decide
+            pass
+        else:
+            # Just negation without clear sentiment words, let AI decide
+            pass
+    else:
+        # No negation, use simple logic
+        if negative_words_found and not positive_words_found:
+            return "negative"
+        elif positive_words_found and not negative_words_found:
+            return "positive"
     
     # 1️⃣ Check toxicity first
     tox_inputs = toxicity_tokenizer(text, return_tensors="pt", truncation=True)
