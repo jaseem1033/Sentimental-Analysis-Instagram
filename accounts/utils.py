@@ -34,6 +34,19 @@ toxicity_model = AutoModelForSequenceClassification.from_pretrained("unitary/tox
 sentiment_labels = ["negative", "neutral", "positive"]
 
 def classify_comment(text):
+    # 0️⃣ Pre-check for obvious cases (fallback for AI model limitations)
+    text_lower = text.lower().strip()
+    
+    # Obvious negative words
+    obvious_negative = ["bad", "terrible", "awful", "horrible", "worst", "hate", "dislike"]
+    if any(word in text_lower for word in obvious_negative):
+        return "negative"
+    
+    # Obvious positive words  
+    obvious_positive = ["good", "great", "awesome", "amazing", "fantastic", "love", "excellent"]
+    if any(word in text_lower for word in obvious_positive):
+        return "positive"
+    
     # 1️⃣ Check toxicity first
     tox_inputs = toxicity_tokenizer(text, return_tensors="pt", truncation=True)
     tox_outputs = toxicity_model(**tox_inputs)
