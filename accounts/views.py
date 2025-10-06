@@ -314,11 +314,19 @@ class CustomLoginView(APIView):
 @permission_classes([IsAuthenticated])
 def get_child_comments(request, child_id):
     """
-    Get all comments for a specific child account
+    Get all comments for a specific child account.
+    If the child has no comments but other children with the same username do,
+    return comments from any child with the same username.
     """
     try:
         child = Child.objects.get(id=child_id, parent=request.user)
+        
+        # First try to get comments for this specific child
         comments = Comment.objects.filter(child=child).order_by('-created_at')
+        
+        # If no comments found, get comments from any child with the same username
+        if not comments.exists():
+            comments = Comment.objects.filter(child__username=child.username).order_by('-created_at')
         
         # Serialize comments data
         comments_data = []

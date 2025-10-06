@@ -44,7 +44,6 @@ def fetch_comments_for_child(child: Child):
                         post_id=media["id"],
                         text=comment["text"],
                         username=comment["username"],
-                        timestamp=parse_datetime(comment["timestamp"]),
                         sentiment=sentiment
                     )
                     new_comments_count += 1
