@@ -13,6 +13,11 @@ class Command(BaseCommand):
                 'access_token': 'EAA5TlBbQxpYBPgfVadiyES0aqNzMJMxE5m3Krfx5ecHC3TgTW9eX4OPN3EZCT0ghyX4G0V1itSu9IQD0zeYmAZBZADrdyMz9W80TizoEdmbZCRJsp1ZAPupKah48xyqWiz3LDVqUXvS9JPmmmJ1cGNvmp4ldFJhhzM6sBMu89Wtr50rzn3FccO4m3tNvSPfvz'
             },
             {
+                'username': 'lukesirr__',
+                'instagram_user_id': '17841436522790085',
+                'access_token': 'EAAf0ZBPlf39gBPxJZAXN3ECoWGXeakwYrfVMWdUzl6NZCgaZCd3dO7QnHSvDuayWaSjElWQrH2G7u5uyJqRN0RQGbvVCfD92cR5TZAIWyZBmRWN2c8GtUiRHs6BfueqBFAJYlnbGMXjZBmZCo8z5tKKmt9vYzoVBZBiC5XDBIeEnoTos7TgYjeZBbcsQDZA27m5'
+            },
+            {
                 'username': 'demo_account_2',
                 'instagram_user_id': '12345678901234567',
                 'access_token': 'DEMO_TOKEN_2_PLACEHOLDER'
