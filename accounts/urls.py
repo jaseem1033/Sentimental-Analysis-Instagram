@@ -10,7 +10,8 @@ from .views import (
     InstagramOAuthLoginView,
     CustomLoginView,
     get_child_comments,
-    fetch_child_comments
+    fetch_child_comments,
+    fetch_all_children_comments
 )
 
 urlpatterns = [
@@ -25,4 +26,5 @@ urlpatterns = [
     path('comments/update-classification/', update_comments_classification, name='update-comments-classification'),
     path('children/<int:child_id>/comments/', get_child_comments, name='get-child-comments'),
     path('children/<int:child_id>/fetch-comments/', fetch_child_comments, name='fetch-child-comments'),
+    path('children/fetch-all-comments/', fetch_all_children_comments, name='fetch-all-children-comments'),
 ]

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, RefreshCw, Instagram, Calendar, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import CommentList from '@/components/dashboard/CommentList';
 import { Child, Comment, SentimentStats } from '@/types';
 import { childrenAPI, commentsAPI } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
+import { useRealtimeComments } from '@/hooks/useRealtimeComments';
 
 const ChildDashboard: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,13 +21,25 @@ const ChildDashboard: React.FC = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
+  
+  // Real-time comments hook for this specific child
+  const { 
+    data: realtimeData, 
+    isPolling, 
+    error: realtimeError, 
+    startPolling, 
+    stopPolling 
+  } = useRealtimeComments(5000); // 5 second intervals
 
-  useEffect(() => {
-    loadChildData();
+  const loadComments = useCallback(async () => {
+    if (!id) return;
     
-    // Auto-refresh every 3 minutes
-    const interval = setInterval(loadComments, 3 * 60 * 1000);
-    return () => clearInterval(interval);
+    try {
+      const response = await commentsAPI.getComments(id);
+      setComments(response.data);
+    } catch (error) {
+      console.error('Failed to load comments:', error);
+    }
   }, [id]);
 
   const loadChildData = async () => {
@@ -34,18 +47,24 @@ const ChildDashboard: React.FC = () => {
     
     try {
       setIsLoading(true);
+      console.log('Loading child data for ID:', id);
       
       // Fetch child data from API
       const response = await childrenAPI.getChildren();
-      const childData = response.data.find((c: Child) => c.id === id);
+      console.log('All children:', response.data);
+      
+      const childData = response.data.find((c: Child) => c.id === id || c.id === String(id));
+      console.log('Found child data:', childData);
       
       if (childData) {
         setChild(childData);
+        await loadComments();
       } else {
+        console.error('Child not found with ID:', id);
         throw new Error('Child not found');
       }
-      await loadComments();
     } catch (error) {
+      console.error('Error loading child data:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -56,16 +75,64 @@ const ChildDashboard: React.FC = () => {
     }
   };
 
-  const loadComments = async () => {
-    if (!id) return;
-    
-    try {
-      const response = await commentsAPI.getComments(id);
-      setComments(response.data);
-    } catch (error) {
-      console.error('Failed to load comments:', error);
+  useEffect(() => {
+    loadChildData();
+  }, [id]);
+
+  // Start real-time polling when child is loaded
+  useEffect(() => {
+    if (child && !isPolling) {
+      startPolling();
     }
-  };
+  }, [child, isPolling, startPolling]);
+
+  // Fallback: Refresh comments every 10 seconds as backup
+  useEffect(() => {
+    if (child) {
+      const fallbackInterval = setInterval(() => {
+        console.log('Fallback: Refreshing comments...');
+        loadComments();
+      }, 10000); // 10 seconds
+
+      return () => clearInterval(fallbackInterval);
+    }
+  }, [child, loadComments]);
+
+  // Show toast notifications for real-time updates
+  useEffect(() => {
+    if (realtimeData && realtimeData.totalNewComments > 0) {
+      console.log('Real-time data received:', realtimeData);
+      console.log('Current child ID:', id);
+      
+      // Check if this specific child has new comments
+      const childResult = realtimeData.results.find(result => 
+        result.child_id === parseInt(id || '0')
+      );
+      
+      console.log('Child result:', childResult);
+      
+      if (childResult && childResult.new_comments > 0) {
+        console.log('New comments detected for this child, refreshing...');
+        toast({
+          title: 'New Comments Detected',
+          description: `${childResult.new_comments} new comments for @${childResult.username}`,
+        });
+        // Refresh comments when new ones are detected for this child
+        loadComments();
+      }
+    }
+  }, [realtimeData, toast, loadComments, id]);
+
+  // Show error notifications
+  useEffect(() => {
+    if (realtimeError) {
+      toast({
+        variant: 'destructive',
+        title: 'Real-time Update Error',
+        description: realtimeError,
+      });
+    }
+  }, [realtimeError, toast]);
 
   const handleFetchComments = async () => {
     if (!id) return;

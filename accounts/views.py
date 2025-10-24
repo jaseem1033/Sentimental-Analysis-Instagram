@@ -413,3 +413,72 @@ def fetch_child_comments(request, child_id):
         return Response({'error': 'Child not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def fetch_all_children_comments(request):
+    """
+    Fetch comments for all children of the authenticated parent.
+    Used for real-time updates.
+    """
+    try:
+        user = request.user
+        children = Child.objects.filter(parent=user)
+        
+        if not children.exists():
+            return Response({
+                'message': 'No children found for this parent',
+                'total_new_comments': 0,
+                'children_updated': 0
+            })
+        
+        total_new_comments = 0
+        children_updated = 0
+        results = []
+        
+        for child in children:
+            try:
+                # Use the services.py function to fetch comments for this specific child
+                from .services import fetch_comments_for_child
+                
+                result = fetch_comments_for_child(child)
+                
+                if "error" not in result:
+                    new_comments = result.get("new_comments", 0)
+                    total_new_comments += new_comments
+                    children_updated += 1
+                    
+                    results.append({
+                        'child_id': child.id,
+                        'username': child.username,
+                        'new_comments': new_comments,
+                        'status': 'success'
+                    })
+                else:
+                    results.append({
+                        'child_id': child.id,
+                        'username': child.username,
+                        'new_comments': 0,
+                        'status': 'error',
+                        'error': result['error']
+                    })
+                    
+            except Exception as e:
+                results.append({
+                    'child_id': child.id,
+                    'username': child.username,
+                    'new_comments': 0,
+                    'status': 'error',
+                    'error': str(e)
+                })
+        
+        return Response({
+            'message': f'Updated {children_updated} children, {total_new_comments} new comments total',
+            'total_new_comments': total_new_comments,
+            'children_updated': children_updated,
+            'results': results
+        })
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

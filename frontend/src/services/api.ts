@@ -177,6 +177,11 @@ export const commentsAPI = {
     const response = await api.post(`/accounts/children/${childId}/fetch-comments/`);
     return { data: response.data.comments };
   },
+
+  fetchAllChildrenComments: async (): Promise<ApiResponse<{ total_new_comments: number; children_updated: number; results: any[] }>> => {
+    const response = await api.post('/accounts/children/fetch-all-comments/');
+    return { data: response.data };
+  },
 };
 
 export default api;

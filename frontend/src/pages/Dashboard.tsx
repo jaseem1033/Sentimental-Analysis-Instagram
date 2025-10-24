@@ -67,18 +67,20 @@ const Dashboard: React.FC = () => {
               </p>
             </div>
             
-            <Button 
-              onClick={handleAddChild}
-              disabled={isAddingChild}
-              className="flex items-center space-x-2"
-            >
-              {isAddingChild ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )}
-              <span>Add Child</span>
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button 
+                onClick={handleAddChild}
+                disabled={isAddingChild}
+                className="flex items-center space-x-2"
+              >
+                {isAddingChild ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
+                <span>Add Child</span>
+              </Button>
+            </div>
           </div>
         </div>
 
