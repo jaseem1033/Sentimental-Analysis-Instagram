@@ -34,23 +34,13 @@ def fetch_comments_for_child(child: Child):
             if "comments" in media:
                 for comment in media["comments"]["data"]:
                     total_comments_processed += 1
-                    # Check if comment exists for this specific child
+                    # Check if comment exists for this specific child only
                     if not Comment.objects.filter(comment_id=comment["id"], child=child).exists():
-                        # Check if this comment already exists for any child with the same username
-                        existing_comment = Comment.objects.filter(
-                            comment_id=comment["id"], 
-                            child__username=child.username
-                        ).first()
+                        # New comment for this child, classify sentiment
+                        sentiment = classify_comment(comment["text"])
                         
-                        if existing_comment:
-                            # If comment exists for another child with same username, 
-                            # create a copy for this child
-                            sentiment = existing_comment.sentiment
-                        else:
-                            # New comment, classify sentiment
-                            sentiment = classify_comment(comment["text"])
-                        
-                        Comment.objects.create(
+                        # Create the comment
+                        new_comment = Comment.objects.create(
                             child=child,
                             comment_id=comment["id"],
                             post_id=media["id"],
@@ -59,6 +49,11 @@ def fetch_comments_for_child(child: Child):
                             sentiment=sentiment
                         )
                         new_comments_count += 1
+                        
+                        # Send email alert if toxic comment detected
+                        if sentiment == "toxic":
+                            from .email_service import send_toxic_comment_alert
+                            send_toxic_comment_alert(new_comment, child, child.parent)
 
         return {
             "success": True, 

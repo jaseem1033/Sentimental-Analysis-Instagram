@@ -332,24 +332,16 @@ def get_child_comments(request, child_id):
     try:
         child = Child.objects.get(id=child_id, parent=request.user)
         
-        # Get all comments for this username and deduplicate by comment_id
-        all_comments = Comment.objects.filter(
-            child__username=child.username
+        # Get comments only for this specific child
+        comments = Comment.objects.filter(
+            child=child
         ).values(
             'comment_id', 'text', 'sentiment', 'created_at', 'username', 'post_id'
         ).order_by('-created_at')
         
-        # Deduplicate by comment_id using Python
-        seen_comment_ids = set()
-        unique_comments = []
-        for comment in all_comments:
-            if comment['comment_id'] not in seen_comment_ids:
-                seen_comment_ids.add(comment['comment_id'])
-                unique_comments.append(comment)
-        
         # Serialize comments data
         comments_data = []
-        for comment in unique_comments:
+        for comment in comments:
             comments_data.append({
                 'id': comment['comment_id'],  # Use comment_id as unique identifier
                 'text': comment['text'],

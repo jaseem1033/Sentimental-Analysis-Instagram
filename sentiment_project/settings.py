@@ -175,3 +175,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "https://brittani-unconcentrated-jeffery.ngrok-free.dev",
 ]
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'capstone1033@gmail.com'  # Your Gmail
+EMAIL_HOST_PASSWORD = 'tepe lozz agku kgaz'  # Your Gmail App Password
+DEFAULT_FROM_EMAIL = 'capstone1033@gmail.com'  # Your Gmail
