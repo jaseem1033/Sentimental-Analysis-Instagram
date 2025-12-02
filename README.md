@@ -759,12 +759,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Email Support**: technical-support@sentimentguard.com
 - **Documentation**: Comprehensive documentation and guides
 - **Community Forum**: User community for discussions
-
-### **Business Inquiries**
-- **Partnership Opportunities**: partnerships@sentimentguard.com
-- **Enterprise Solutions**: enterprise@sentimentguard.com
-- **Media Inquiries**: media@sentimentguard.com
-
+- 
 ---
 
 **🛡️ Built with ❤️ for child safety and digital well-being**
