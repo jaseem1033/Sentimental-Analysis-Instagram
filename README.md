@@ -716,11 +716,6 @@ npm run lint
 4. Request review from maintainers
 5. Address feedback and make necessary changes
 
-## 📄 License & Legal
-
-### **License**
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ### **Privacy & Data Protection**
 - **GDPR Compliance**: European data protection regulation compliance
 - **Data Minimization**: Collect only necessary data for functionality
@@ -752,14 +747,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **React Community**: Rich ecosystem of libraries and tools
 - **AI/ML Community**: Open source models and research
 
-## 📞 Support & Contact
-
-### **Technical Support**
-- **GitHub Issues**: Report bugs and request features
-- **Email Support**: technical-support@sentimentguard.com
-- **Documentation**: Comprehensive documentation and guides
-- **Community Forum**: User community for discussions
-- 
 ---
 
 **🛡️ Built with ❤️ for child safety and digital well-being**
